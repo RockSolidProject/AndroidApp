@@ -1,13 +1,13 @@
-package com.example.pora_projekt.ui.notifications
+package com.example.pora_projekt.ui.gforce
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
-class NotificationsViewModel : ViewModel() {
+class GforceViewModel : ViewModel() {
 
     private val _text = MutableLiveData<String>().apply {
-        value = "This is notifications Fragment"
+        value = "G-force"
     }
     val text: LiveData<String> = _text
 }

@@ -1,13 +1,13 @@
-package com.example.pora_projekt.ui.home
+package com.example.pora_projekt.ui.camera
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
-class HomeViewModel : ViewModel() {
+class CameraViewModel : ViewModel() {
 
     private val _text = MutableLiveData<String>().apply {
-        value = "This is home Fragment"
+        value = "Camera"
     }
     val text: LiveData<String> = _text
 }
