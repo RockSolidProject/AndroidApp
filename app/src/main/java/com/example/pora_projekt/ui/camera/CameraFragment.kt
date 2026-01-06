@@ -98,18 +98,15 @@ class CameraFragment : Fragment() {
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
 
-            // Setup preview
             val preview = Preview.Builder()
                 .build()
                 .also {
                     it.setSurfaceProvider(binding.previewView.surfaceProvider)
                 }
 
-            // Setup image capture
             imageCapture = ImageCapture.Builder()
                 .build()
 
-            // Select back camera
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
             try {
