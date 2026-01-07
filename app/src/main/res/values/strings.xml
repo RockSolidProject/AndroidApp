@@ -3,8 +3,8 @@
     <string name="title_camera">Camera</string>
     <string name="title_gforce">G-force</string>
     <string name="title_comment">Comment</string>
+    <string name="title_simulacija">Simulacija</string>
     <string name="title_settings">Settings</string>
     <string name="fall_detected">PADEC ZAZNAN!</string>
-
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

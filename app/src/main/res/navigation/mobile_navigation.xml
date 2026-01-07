@@ -24,6 +24,12 @@
         tools:layout="@layout/fragment_comment" />
 
     <fragment
+        android:id="@+id/navigation_simulacija"
+        android:name="com.example.pora_projekt.ui.simulation.SimulationFragment"
+        android:label="@string/title_simulacija"
+        tools:layout="@layout/fragment_simulation" />
+
+    <fragment
         android:id="@+id/navigation_settings"
         android:name="com.example.pora_projekt.ui.settings.SettingsFragment"
         android:label="@string/title_settings"
