@@ -18,6 +18,12 @@
         tools:layout="@layout/fragment_gforce" />
 
     <fragment
+        android:id="@+id/navigation_comment"
+        android:name="com.example.pora_projekt.ui.comment.CommentFragment"
+        android:label="@string/title_comment"
+        tools:layout="@layout/fragment_comment" />
+
+    <fragment
         android:id="@+id/navigation_settings"
         android:name="com.example.pora_projekt.ui.settings.SettingsFragment"
         android:label="@string/title_settings"
