@@ -16,19 +16,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintDimensionRatio="3:4"/>
 
-    <ImageView
-        android:id="@+id/photoImageView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:scaleType="fitCenter"
-        android:adjustViewBounds="true"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/captureButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintDimensionRatio="3:4" />
-
     <Button
         android:id="@+id/captureButton"
         android:layout_width="wrap_content"
