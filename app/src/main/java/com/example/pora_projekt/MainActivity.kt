@@ -35,6 +35,12 @@ class MainActivity : AppCompatActivity() {
         navView.setupWithNavController(navController)
     }
 
+    // So the back button in top nav bar works
+    override fun onSupportNavigateUp(): Boolean {
+        val navController = findNavController(R.id.nav_host_fragment_activity_main)
+        return navController.navigateUp() || super.onSupportNavigateUp()
+    }
+
     private fun initializeOsmdroid() {
         try {
             Configuration.getInstance().apply {

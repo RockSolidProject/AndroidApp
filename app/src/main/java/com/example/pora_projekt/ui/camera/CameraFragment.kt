@@ -21,6 +21,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
+import com.example.pora_projekt.R
 import com.example.pora_projekt.api.Hold
 import com.example.pora_projekt.databinding.FragmentCameraBinding
 import java.io.File
@@ -68,11 +70,15 @@ class CameraFragment : Fragment() {
             binding.uploadButton.isEnabled = enabled
         }
 
-        cameraViewModel.holdsResult.observe(viewLifecycleOwner) { (photoFile, holds) ->
-            val bitmapWithRectangles = drawHoldsOnImage(photoFile, holds)
-            binding.previewView.visibility = View.GONE
-            binding.photoImageView.setImageBitmap(bitmapWithRectangles)
-            binding.photoImageView.visibility = View.VISIBLE
+        cameraViewModel.holdsResult.observe(viewLifecycleOwner) { result ->
+            result?.let { (photoFile, holds) ->
+                val bitmapWithRectangles = drawHoldsOnImage(photoFile, holds)
+
+                val bundle = Bundle().apply {
+                    putParcelable("resultBitmap", bitmapWithRectangles)
+                }
+                findNavController().navigate(R.id.navigation_holds_result, bundle)
+            }
         }
 
         return root
@@ -101,8 +107,17 @@ class CameraFragment : Fragment() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == PERMISSION_REQUEST_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                startCamera()
+                if (_binding != null) {
+                    startCamera()
+                }
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (hasRequiredPermissions() && _binding != null) {
+            startCamera()
         }
     }
 
@@ -110,6 +125,7 @@ class CameraFragment : Fragment() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
 
         cameraProviderFuture.addListener({
+            if (_binding == null) return@addListener
             val cameraProvider = cameraProviderFuture.get()
 
             val preview = Preview.Builder()
@@ -132,7 +148,7 @@ class CameraFragment : Fragment() {
                     imageCapture
                 )
             } catch (exc: Exception) {
-                binding.statusText.text = "Camera initialization failed"
+                _binding?.statusText?.text = "Camera initialization failed"
             }
         }, ContextCompat.getMainExecutor(requireContext()))
     }

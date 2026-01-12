@@ -15,8 +15,8 @@ import retrofit2.Response
 import java.io.File
 
 class CameraViewModel : ViewModel() {
-    private val _holdsResult = MutableLiveData<Pair<File, List<Hold>>>()
-    val holdsResult: LiveData<Pair<File, List<Hold>>> = _holdsResult
+    private val _holdsResult = MutableLiveData<Pair<File, List<Hold>>?>()
+    val holdsResult: LiveData<Pair<File, List<Hold>>?> = _holdsResult
 
     private val _statusText = MutableLiveData<String>().apply {
         value = "Ready to capture photo"
@@ -61,6 +61,7 @@ class CameraViewModel : ViewModel() {
                     Log.d("CameraViewModel", "Upload response: $uploadResponse")
                     if (uploadResponse != null && capturedPhotoFile != null) {
                         _holdsResult.value = Pair(capturedPhotoFile!!, uploadResponse.holds)
+                        _holdsResult.value = null
                     }
                     capturedPhotoFile = null
                     _uploadEnabled.value = false

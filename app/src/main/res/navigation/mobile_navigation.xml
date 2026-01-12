@@ -34,4 +34,10 @@
         android:name="com.example.pora_projekt.ui.settings.SettingsFragment"
         android:label="@string/title_settings"
         tools:layout="@layout/fragment_settings" />
+
+    <fragment
+            android:id="@+id/navigation_holds_result"
+            android:name="com.example.pora_projekt.ui.camera.CameraResultFragment"
+            android:label="Detected Holds"
+            tools:layout="@layout/fragment_camera_result" />
 </navigation>
