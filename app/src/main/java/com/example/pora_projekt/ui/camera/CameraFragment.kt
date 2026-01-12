@@ -2,6 +2,12 @@ package com.example.pora_projekt.ui.camera
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.media.ExifInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,6 +21,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.example.pora_projekt.api.Hold
 import com.example.pora_projekt.databinding.FragmentCameraBinding
 import java.io.File
 import java.text.SimpleDateFormat
@@ -59,6 +66,13 @@ class CameraFragment : Fragment() {
 
         cameraViewModel.uploadEnabled.observe(viewLifecycleOwner) { enabled ->
             binding.uploadButton.isEnabled = enabled
+        }
+
+        cameraViewModel.holdsResult.observe(viewLifecycleOwner) { (photoFile, holds) ->
+            val bitmapWithRectangles = drawHoldsOnImage(photoFile, holds)
+            binding.previewView.visibility = View.GONE
+            binding.photoImageView.setImageBitmap(bitmapWithRectangles)
+            binding.photoImageView.visibility = View.VISIBLE
         }
 
         return root
@@ -147,6 +161,38 @@ class CameraFragment : Fragment() {
                 }
             }
         )
+    }
+    fun drawHoldsOnImage(imageFile: File, holds: List<Hold>): Bitmap {
+        var bitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
+
+        val exif = ExifInterface(imageFile.absolutePath)
+        val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+        val matrix = android.graphics.Matrix()
+        when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+            ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+            ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+        }
+        if (orientation != ExifInterface.ORIENTATION_NORMAL) {
+            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        }
+
+        val mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
+        val canvas = Canvas(mutableBitmap)
+        val paint = Paint().apply {
+            color = Color.RED
+            style = Paint.Style.STROKE
+            strokeWidth = 5f
+        }
+
+        for (hold in holds) {
+            val left = hold.position[0] - hold.size[0] / 2
+            val top = hold.position[1] - hold.size[1] / 2
+            val right = left + hold.size[0]
+            val bottom = top + hold.size[1]
+            canvas.drawRect(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat(), paint)
+        }
+        return mutableBitmap
     }
 
     override fun onDestroyView() {

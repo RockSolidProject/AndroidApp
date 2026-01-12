@@ -1,8 +1,10 @@
 package com.example.pora_projekt.ui.camera
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.pora_projekt.api.Hold
 import com.example.pora_projekt.api.RetrofitClient
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -13,6 +15,8 @@ import retrofit2.Response
 import java.io.File
 
 class CameraViewModel : ViewModel() {
+    private val _holdsResult = MutableLiveData<Pair<File, List<Hold>>>()
+    val holdsResult: LiveData<Pair<File, List<Hold>>> = _holdsResult
 
     private val _statusText = MutableLiveData<String>().apply {
         value = "Ready to capture photo"
@@ -47,12 +51,17 @@ class CameraViewModel : ViewModel() {
         _uploadEnabled.value = false
 
         val requestFile = file.asRequestBody("image/jpeg".toMediaType())
-        val body = MultipartBody.Part.createFormData("photo", file.name, requestFile)
+        val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
 
         RetrofitClient.instance.uploadPhoto(body).enqueue(object : Callback<com.example.pora_projekt.api.UploadResponse> {
             override fun onResponse(call: Call<com.example.pora_projekt.api.UploadResponse>, response: Response<com.example.pora_projekt.api.UploadResponse>) {
                 if (response.isSuccessful) {
                     _statusText.value = "Upload successful!"
+                    val uploadResponse = response.body()
+                    Log.d("CameraViewModel", "Upload response: $uploadResponse")
+                    if (uploadResponse != null && capturedPhotoFile != null) {
+                        _holdsResult.value = Pair(capturedPhotoFile!!, uploadResponse.holds)
+                    }
                     capturedPhotoFile = null
                     _uploadEnabled.value = false
                 } else {

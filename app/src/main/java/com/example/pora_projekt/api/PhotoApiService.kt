@@ -8,13 +8,16 @@ import retrofit2.Call
 
 interface PhotoApiService {
     @Multipart
-    @POST("upload") // TODO spremeni endpoint
+    @POST("/detect-holds")
     fun uploadPhoto(@Part photo: MultipartBody.Part): Call<UploadResponse>
 }
 
 data class UploadResponse(
-    val success: Boolean,
-    val message: String,
-    val photoUrl: String? = null
+    val holds : List<Hold>
+)
+
+data class Hold(
+    val position: List<Int>,
+    val size: List<Int>
 )
 
