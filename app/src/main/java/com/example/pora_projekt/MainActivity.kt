@@ -10,6 +10,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.pora_projekt.databinding.ActivityMainBinding
 import com.example.pora_projekt.mqtt.MqttSender
+import com.example.pora_projekt.service.SensorDataService
 import org.osmdroid.config.Configuration
 
 class MainActivity : AppCompatActivity() {
@@ -38,6 +39,31 @@ class MainActivity : AppCompatActivity() {
 
         MqttSender.connect()
     }
+
+    private val LOCATION_PERMISSIONS = arrayOf(
+        android.Manifest.permission.ACCESS_FINE_LOCATION,
+        android.Manifest.permission.ACCESS_COARSE_LOCATION
+    )
+    private val LOCATION_REQUEST_CODE = 101
+
+    private fun ensureLocationPermissions() {
+        if (LOCATION_PERMISSIONS.any {
+                checkSelfPermission(it) != android.content.pm.PackageManager.PERMISSION_GRANTED
+            }) {
+            requestPermissions(LOCATION_PERMISSIONS, LOCATION_REQUEST_CODE)
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        ensureLocationPermissions()
+        if (LOCATION_PERMISSIONS.all {
+                checkSelfPermission(it) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            }) {
+            startForegroundService(Intent(this, SensorDataService::class.java))
+        }
+    }
+
 
     // So the back button in top nav bar works
     override fun onSupportNavigateUp(): Boolean {

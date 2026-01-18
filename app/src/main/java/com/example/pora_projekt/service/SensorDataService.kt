@@ -1,0 +1,79 @@
+package com.example.pora_projekt.service
+
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.Service
+import android.content.Intent
+import android.os.Handler
+import android.os.IBinder
+import androidx.core.app.NotificationCompat
+import com.example.pora_projekt.mqtt.MqttSender
+
+class SensorDataService : Service() {
+    private val handler = Handler()
+    private var intervalMillis: Long = 20 * 1000 // TODO: Add to settings
+    private lateinit var accelerationProvider: AccelerationProvider
+    private lateinit var locationProvider: LocationProvider
+
+    private val sendDataRunnable = object : Runnable {
+        override fun run() {
+            val (lat, lon) = locationProvider.getLocation()
+            val latStr = lat?.toString()
+            val lonStr = lon?.toString()
+            if (latStr == null || lonStr == null) {
+                android.util.Log.d("SensorDataService", "Location not available yet.")
+                handler.postDelayed(this, intervalMillis)
+                return
+            }
+
+            val accelData: String? = accelerationProvider.getCurrentAccelerationString()
+            val timestamp : String = System.currentTimeMillis().toString()
+            val username : String = MqttSender.MQTT_USERNAME ?: "Unknown"
+
+            var payload = "{\"latitude\"=$latStr"
+            payload = "$payload,\"longitude\"=$lonStr"
+            payload = "$payload,\"acceleration\"=\"${accelData ?: "N/A"}\""
+            payload = "$payload,\"timestamp\"=\"$timestamp\""
+            payload = "$payload,\"username\"=\"$username\""
+            payload = "$payload}"
+            android.util.Log.d("SensorDataService", "Publishing: $payload")
+            MqttSender.publish("sensors", payload)
+
+            handler.postDelayed(this, intervalMillis)
+        }
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        accelerationProvider = AccelerationProvider(this)
+        locationProvider = LocationProvider(this)
+        locationProvider.start()
+        startForegroundService()
+        handler.post(sendDataRunnable)
+    }
+
+    override fun onDestroy() {
+        handler.removeCallbacks(sendDataRunnable)
+        accelerationProvider.cleanup()
+        locationProvider.stop()
+        super.onDestroy()
+    }
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    private fun startForegroundService() {
+        val channelId = "sensor_data_channel"
+        val channel = NotificationChannel(
+            channelId,
+            "Sensor Data Service",
+            NotificationManager.IMPORTANCE_LOW
+        )
+        getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+        val notification: Notification = NotificationCompat.Builder(this, channelId)
+            .setContentTitle("Sending sensor data")
+            .setSmallIcon(android.R.drawable.ic_menu_mylocation)
+            .build()
+        startForeground(1, notification)
+    }
+}

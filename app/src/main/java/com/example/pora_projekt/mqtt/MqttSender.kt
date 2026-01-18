@@ -9,15 +9,16 @@ import java.util.UUID
 object MqttSender {
     private var MQTT_HOST: String = "b2fd99f96df44eac8c0cc5f50362cf30.s1.eu.hivemq.cloud"
     private var MQTT_PORT: Int = 8883
-    private var MQTT_USERNAME: String = "TESTIR"
-    private var MQTT_PASSWORD: String = "..."
+    public var MQTT_USERNAME: String? = "TESTIR" // TODO add to settings
+    public var MQTT_PASSWORD: String? = "TMP#321a" // TODO add to settings
 
     private var client: Mqtt3AsyncClient? = null
     private val queue: Queue<Pair<String, String>> = LinkedList()
     private var isConnected = false
 
-    fun connect() {
-        if (client != null && isConnected) return
+    fun connect() : Boolean {
+        if (MQTT_USERNAME == null || MQTT_PASSWORD == null) return false
+        if (client != null && isConnected) return false
         val clientId = UUID.randomUUID().toString()
         client = MqttClient.builder()
             .useMqttVersion3()
@@ -27,17 +28,18 @@ object MqttSender {
             .sslWithDefaultConfig()
             .buildAsync()
 
-        if (client == null) return
+        if (client == null) return false
         client!!.connectWith()
             .simpleAuth()
-            .username(MQTT_USERNAME)
-            .password(MQTT_PASSWORD.toByteArray())
+            .username(MQTT_USERNAME!!)
+            .password(MQTT_PASSWORD!!.toByteArray())
             .applySimpleAuth()
             .send()
             .whenComplete { _, throwable ->
                 isConnected = throwable == null
                 if (isConnected) flushQueue()
             }
+        return true
     }
 
     fun publish(topic: String, payload: String) {
@@ -67,8 +69,10 @@ object MqttSender {
         isConnected = false
     }
 
-    fun restart() {
+    fun restart() : Boolean {
         disconnect()
-        connect()
+        val result = connect()
+        isConnected = result
+        return result
     }
 }
