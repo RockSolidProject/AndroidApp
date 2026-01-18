@@ -1,5 +1,6 @@
 package com.example.pora_projekt
 
+import android.content.Intent
 import android.os.Bundle
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
@@ -8,6 +9,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.pora_projekt.databinding.ActivityMainBinding
+import com.example.pora_projekt.mqtt.MqttSender
 import org.osmdroid.config.Configuration
 
 class MainActivity : AppCompatActivity() {
@@ -33,6 +35,8 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+        MqttSender.connect()
     }
 
     // So the back button in top nav bar works

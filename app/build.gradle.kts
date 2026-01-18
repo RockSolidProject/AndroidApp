@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.pora_projekt"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -37,9 +37,20 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
+    packaging {
+        resources {
+            pickFirsts += setOf(
+                "META-INF/INDEX.LIST",
+                "META-INF/io.netty.versions.properties"
+            )
+
+        }
+    }
 }
 
 dependencies {
+    implementation("com.hivemq:hivemq-mqtt-client:1.3.0")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
