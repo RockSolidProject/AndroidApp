@@ -52,7 +52,8 @@ android {
 dependencies {
     implementation("com.hivemq:hivemq-mqtt-client:1.3.0")
     implementation("com.google.android.gms:play-services-location:21.0.1")
-
+    debugImplementation("com.github.chuckerteam.chucker:library:4.0.0")
+    releaseImplementation("com.github.chuckerteam.chucker:library-no-op:4.0.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

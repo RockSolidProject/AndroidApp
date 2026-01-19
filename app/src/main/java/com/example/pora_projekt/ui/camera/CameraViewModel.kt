@@ -1,9 +1,10 @@
 package com.example.pora_projekt.ui.camera
 
+import android.app.Application
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.example.pora_projekt.api.Hold
 import com.example.pora_projekt.api.RetrofitClient
 import okhttp3.MediaType.Companion.toMediaType
@@ -14,7 +15,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
 
-class CameraViewModel : ViewModel() {
+class CameraViewModel(application: Application) : AndroidViewModel(application) {
     private val _holdsResult = MutableLiveData<Pair<File, List<Hold>>?>()
     val holdsResult: LiveData<Pair<File, List<Hold>>?> = _holdsResult
 
@@ -53,7 +54,7 @@ class CameraViewModel : ViewModel() {
         val requestFile = file.asRequestBody("image/jpeg".toMediaType())
         val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
 
-        RetrofitClient.instance.uploadPhoto(body).enqueue(object : Callback<com.example.pora_projekt.api.UploadResponse> {
+        RetrofitClient.getInstance(getApplication()).uploadPhoto(body).enqueue(object : Callback<com.example.pora_projekt.api.UploadResponse> {
             override fun onResponse(call: Call<com.example.pora_projekt.api.UploadResponse>, response: Response<com.example.pora_projekt.api.UploadResponse>) {
                 if (response.isSuccessful) {
                     _statusText.value = "Upload successful!"

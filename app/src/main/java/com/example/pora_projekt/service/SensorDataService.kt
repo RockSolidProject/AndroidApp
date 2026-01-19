@@ -8,8 +8,8 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Handler
 import android.os.IBinder
+import android.preference.PreferenceManager
 import androidx.core.app.NotificationCompat
-import androidx.preference.PreferenceManager
 import com.example.pora_projekt.mqtt.MqttSender
 
 class SensorDataService : Service() {
