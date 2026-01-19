@@ -43,7 +43,13 @@ object MqttSender {
             .send()
             .whenComplete { _, throwable ->
                 isConnected = throwable == null
-                if (isConnected) flushQueue()
+                if (isConnected) {
+                    Log.d("MqttSender", "Connected to MQTT broker.")
+                    flushQueue()
+                }
+                else {
+                    Log.e("MqttSender", "Failed to connect to MQTT broker: ${MQTT_USERNAME}, ${MQTT_PASSWORD}")
+                }
             }
         return true
     }

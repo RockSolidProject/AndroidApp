@@ -1,6 +1,7 @@
 package com.example.pora_projekt.ui.comment
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +16,7 @@ class CommentFragment : Fragment() {
 
     private var _binding: FragmentCommentBinding? = null
     private val binding get() = _binding!!
+    private lateinit var locationProvider: LocationProvider
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -27,6 +29,10 @@ class CommentFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Initialize and start location provider
+        locationProvider = LocationProvider(requireContext())
+        locationProvider.start()
 
         val messageTypes = arrayOf("Nevarnost", "Ponovno postavljanje stene")
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, messageTypes)
@@ -42,22 +48,28 @@ class CommentFragment : Fragment() {
                 return@setOnClickListener
             }
 
+            val (lat, lon) = locationProvider.getLocation()
+
+            if (lat == null || lon == null) {
+                binding.textStatus.text = "Lokacija še ni na voljo"
+                return@setOnClickListener
+            }
+
             binding.buttonSend.isEnabled = false
             binding.textStatus.text = "Pošiljam..."
 
             val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
             val username = sharedPreferences.getString("username", "Unknown") ?: "Unknown"
             val timestamp = System.currentTimeMillis().toString()
-
-            val currentLocation = LocationProvider(this.context!!).getLocation()
+            Log.d("location", "Lat: $lat, Lon: $lon")
 
             val payload = buildString {
                 append("{\"type\"=\"$selectedType\"")
                 append(",\"message\"=\"$message\"")
                 append(",\"username\"=\"$username\"")
                 append(",\"timestamp\"=\"$timestamp\"")
-                append(",\"latitude\"=${currentLocation.first}")
-                append(",\"longitude\"=${currentLocation.second}")
+                append(",\"latitude\"=$lat")
+                append(",\"longitude\"=$lon")
                 append("}")
             }
 
@@ -66,13 +78,12 @@ class CommentFragment : Fragment() {
             binding.textStatus.text = "Sporočilo poslano"
             binding.editMessage.setText("")
             binding.buttonSend.isEnabled = true
-
-        // TODO pošiljanje na strežnik
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        locationProvider.stop()
         _binding = null
     }
 }

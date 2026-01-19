@@ -14,7 +14,7 @@ import com.example.pora_projekt.mqtt.MqttSender
 
 class SensorDataService : Service() {
     private val handler = Handler()
-    private var intervalMillis: Long = 60 * 1000 // TODO: Add to settings
+    private var intervalMillis: Long = 60 * 1000
     private lateinit var accelerationProvider: AccelerationProvider
     private lateinit var locationProvider: LocationProvider
     private lateinit var sharedPreferences: SharedPreferences
@@ -47,7 +47,7 @@ class SensorDataService : Service() {
                 append("}")
             }
 
-            android.util.Log.d("SensorDataService", "Publishing: $payload")// TODO check send the message
+            android.util.Log.d("SensorDataService", "Publishing: $payload")
             MqttSender.publish("sensors", payload)
 
             handler.postDelayed(this, intervalMillis)
@@ -66,7 +66,7 @@ class SensorDataService : Service() {
         if (username.isNotEmpty() && password.isNotEmpty()) {
             MqttSender.setCredentials(username, password)
             MqttSender.connect()
-        } // TODO check if necessary
+        }
 
         startForegroundService()
         handler.post(sendDataRunnable)

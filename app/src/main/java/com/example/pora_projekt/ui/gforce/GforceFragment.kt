@@ -10,6 +10,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.pora_projekt.databinding.FragmentGforceBinding
+import com.example.pora_projekt.mqtt.MqttSender
+import com.example.pora_projekt.service.LocationProvider
 import java.util.Locale
 import kotlin.math.max
 import kotlin.math.min
@@ -29,6 +31,7 @@ class GforceFragment : Fragment() {
     private var currentX = 0f
     private var currentY = 0f
     private var currentZ = 0f
+    private lateinit var locationProvider: LocationProvider
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,12 +44,28 @@ class GforceFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        locationProvider = LocationProvider(requireContext())
+        locationProvider.start()
         fallDetector = FallDetectorLinear(
             requireContext(),
             onFallDetected = {
                 Log.d("FallDetector", "PADEC ZAZNAN!")
                 binding.textFallDetected.text = "PADEC ZAZNAN!"
+                val username = MqttSender.MQTT_USERNAME ?: "Unknown"
+                val timestamp = System.currentTimeMillis().toString()
+                val (lat, lon) = locationProvider.getLocation()
+                    ?: Pair(0.0, 0.0)
+                val payload = buildString {
+                    append("{\"type\"=\"extreme\"")
+                    append(",\"message\"=\"$username fell\"")
+                    append(",\"username\"=\"$username\"")
+                    append(",\"timestamp\"=\"$timestamp\"")
+                    append(",\"latitude\"=$lat")
+                    append(",\"longitude\"=$lon")
+                    append("}")
+                }
+
+                MqttSender.publish("messages", payload)
 
                 clearFallTextRunnable?.let { handler.removeCallbacks(it) }
 

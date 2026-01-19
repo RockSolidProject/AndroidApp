@@ -16,6 +16,7 @@ import com.example.pora_projekt.prefs.SimulationPrefs
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import java.util.Locale
+import kotlin.random.Random
 
 class SimulationFragment : Fragment() {
 
@@ -269,15 +270,17 @@ class SimulationFragment : Fragment() {
                             interval
                         )
                     }
+                    for(i in 1..randomPeople) {
+                        MqttSender.publish("sensors", buildString {
+                            append("{\"latitude\"=$selectedLatitude")
+                            append(",\"longitude\"=$selectedLongitude")
+                            append(",\"acceleration\"=\"N/A\"")
+                            append(",\"timestamp\"=${System.currentTimeMillis()}")
+                            append(", \"username\"=\"${Random.nextInt() }\"")
+                            append("}")
+                        })
+                    }
 
-                    MqttSender.publish("simulation", buildString {
-                        append("{\"latitude\"=$selectedLatitude")
-                        append(",\"longitude\"=$selectedLongitude")
-                        append(",\"people\"=$randomPeople")
-                        append(",\"timestamp\"=${System.currentTimeMillis()}")
-                        append(",\"address\"=\"$selectedAddress\"")
-                        append("}")
-                    })// TODO: Pošlji podatke na server
                     println("Simulacija: $randomPeople oseb na lokaciji $selectedLatitude, $selectedLongitude")
 
                     globalHandler.postDelayed(this, interval * 1000)
