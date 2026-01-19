@@ -34,7 +34,7 @@ class CommentFragment : Fragment() {
         locationProvider = LocationProvider(requireContext())
         locationProvider.start()
 
-        val messageTypes = arrayOf("Nevarnost", "Ponovno postavljanje stene")
+        val messageTypes = arrayOf("Opozorilo", "Postavitev stene")
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, messageTypes)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerMessageType.adapter = adapter
