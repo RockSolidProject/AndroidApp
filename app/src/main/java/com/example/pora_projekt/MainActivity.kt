@@ -8,18 +8,20 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import androidx.preference.PreferenceManager
 import com.example.pora_projekt.databinding.ActivityMainBinding
 import com.example.pora_projekt.mqtt.MqttSender
 import com.example.pora_projekt.service.SensorDataService
 import org.osmdroid.config.Configuration
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var app: PoraApp
 
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        app = application as PoraApp
         initializeOsmdroid()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -36,8 +38,12 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
-
-        MqttSender.connect()
+        val preferences = PreferenceManager.getDefaultSharedPreferences(this)
+        MqttSender.setCredentials(
+            preferences.getString("username", "") ?: "",
+            preferences.getString("password", "") ?: ""
+        )
+        MqttSender.connect();
     }
 
     private val LOCATION_PERMISSIONS = arrayOf(

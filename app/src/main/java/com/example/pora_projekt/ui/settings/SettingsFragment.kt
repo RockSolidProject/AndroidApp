@@ -1,42 +1,41 @@
 package com.example.pora_projekt.ui.settings
 
+import android.content.SharedPreferences
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.TextView
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import com.example.pora_projekt.databinding.FragmentSettingsBinding
+import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceManager
+import com.example.pora_projekt.R
+import com.example.pora_projekt.mqtt.MqttSender
 
-class SettingsFragment : Fragment() {
 
-    private var _binding: FragmentSettingsBinding? = null
+class SettingsFragment : PreferenceFragmentCompat() {
+    private lateinit var sharedPreferences: SharedPreferences
 
-    // This property is only valid between onCreateView and
-    // onDestroyView.
-    private val binding get() = _binding!!
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        setPreferencesFromResource(R.xml.root_preferences, rootKey)
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        val notificationsViewModel =
-            ViewModelProvider(this).get(SettingsViewModel::class.java)
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
 
-        _binding = FragmentSettingsBinding.inflate(inflater, container, false)
-        val root: View = binding.root
 
-        val textView: TextView = binding.textNotifications
-        notificationsViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
+    }
+
+    private val listener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
+        when(key) {
+            "username", "password" -> {
+                MqttSender.setCredentials(
+                    sharedPreferences.getString("username", "") ?: "",
+                    sharedPreferences.getString("password", "") ?: ""
+                )
+                MqttSender.restart()
+            }
         }
-        return root
+
+
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)
     }
 }

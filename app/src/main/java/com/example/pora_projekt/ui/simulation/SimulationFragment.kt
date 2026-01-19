@@ -11,6 +11,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.pora_projekt.databinding.FragmentSimulationBinding
+import com.example.pora_projekt.mqtt.MqttSender
+import com.example.pora_projekt.prefs.SimulationPrefs
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import java.util.Locale
@@ -28,13 +30,13 @@ class SimulationFragment : Fragment() {
     private var isSimulationRunning = false
 
     companion object {
-        private const val PREFS_NAME = "SimulationPrefs"
-        private const val KEY_IS_RUNNING = "is_running"
-        private const val KEY_LATITUDE = "latitude"
-        private const val KEY_LONGITUDE = "longitude"
-        private const val KEY_MIN_PEOPLE = "min_people"
-        private const val KEY_MAX_PEOPLE = "max_people"
-        private const val KEY_INTERVAL = "interval"
+        private const val PREFS_NAME = SimulationPrefs.PREFS_NAME
+        private const val KEY_IS_RUNNING = SimulationPrefs.KEY_IS_RUNNING
+        private const val KEY_LATITUDE = SimulationPrefs.KEY_LATITUDE
+        private const val KEY_LONGITUDE = SimulationPrefs.KEY_LONGITUDE
+        private const val KEY_MIN_PEOPLE = SimulationPrefs.KEY_MIN_PEOPLE
+        private const val KEY_MAX_PEOPLE = SimulationPrefs.KEY_MAX_PEOPLE
+        private const val KEY_INTERVAL = SimulationPrefs.KEY_INTERVAL
 
         private val globalHandler = Handler(Looper.getMainLooper())
         private var globalSimulationRunnable: Runnable? = null
@@ -268,7 +270,14 @@ class SimulationFragment : Fragment() {
                         )
                     }
 
-                    // TODO: Pošlji podatke na server
+                    MqttSender.publish("simulation", buildString {
+                        append("{\"latitude\"=$selectedLatitude")
+                        append(",\"longitude\"=$selectedLongitude")
+                        append(",\"people\"=$randomPeople")
+                        append(",\"timestamp\"=${System.currentTimeMillis()}")
+                        append(",\"address\"=\"$selectedAddress\"")
+                        append("}")
+                    })// TODO: Pošlji podatke na server
                     println("Simulacija: $randomPeople oseb na lokaciji $selectedLatitude, $selectedLongitude")
 
                     globalHandler.postDelayed(this, interval * 1000)

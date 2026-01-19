@@ -1,5 +1,6 @@
 package com.example.pora_projekt.mqtt
 
+import android.util.Log
 import com.hivemq.client.mqtt.MqttClient
 import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient
 import java.util.LinkedList
@@ -9,12 +10,17 @@ import java.util.UUID
 object MqttSender {
     private var MQTT_HOST: String = "b2fd99f96df44eac8c0cc5f50362cf30.s1.eu.hivemq.cloud"
     private var MQTT_PORT: Int = 8883
-    public var MQTT_USERNAME: String? = "TESTIR" // TODO add to settings
-    public var MQTT_PASSWORD: String? = "TMP#321a" // TODO add to settings
+    public var MQTT_USERNAME: String? = null
+    public var MQTT_PASSWORD: String? = null
 
     private var client: Mqtt3AsyncClient? = null
     private val queue: Queue<Pair<String, String>> = LinkedList()
     private var isConnected = false
+
+    fun setCredentials(username: String, password: String) {
+        MQTT_USERNAME = username
+        MQTT_PASSWORD = password
+    }
 
     fun connect() : Boolean {
         if (MQTT_USERNAME == null || MQTT_PASSWORD == null) return false

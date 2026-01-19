@@ -76,6 +76,7 @@ dependencies {
 
     // OpenStreetMap
     implementation(libs.osmdroid.android)
+    implementation(libs.androidx.preference)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

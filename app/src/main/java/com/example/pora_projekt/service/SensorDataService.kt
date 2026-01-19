@@ -5,22 +5,29 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Handler
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.preference.PreferenceManager
 import com.example.pora_projekt.mqtt.MqttSender
 
 class SensorDataService : Service() {
     private val handler = Handler()
-    private var intervalMillis: Long = 20 * 1000 // TODO: Add to settings
+    private var intervalMillis: Long = 60 * 1000 // TODO: Add to settings
     private lateinit var accelerationProvider: AccelerationProvider
     private lateinit var locationProvider: LocationProvider
+    private lateinit var sharedPreferences: SharedPreferences
 
     private val sendDataRunnable = object : Runnable {
         override fun run() {
+            val intervalSeconds = sharedPreferences.getInt("update_interval", 60)
+            intervalMillis = intervalSeconds * 1000L
+
             val (lat, lon) = locationProvider.getLocation()
             val latStr = lat?.toString()
             val lonStr = lon?.toString()
+
             if (latStr == null || lonStr == null) {
                 android.util.Log.d("SensorDataService", "Location not available yet.")
                 handler.postDelayed(this, intervalMillis)
@@ -31,13 +38,16 @@ class SensorDataService : Service() {
             val timestamp : String = System.currentTimeMillis().toString()
             val username : String = MqttSender.MQTT_USERNAME ?: "Unknown"
 
-            var payload = "{\"latitude\"=$latStr"
-            payload = "$payload,\"longitude\"=$lonStr"
-            payload = "$payload,\"acceleration\"=\"${accelData ?: "N/A"}\""
-            payload = "$payload,\"timestamp\"=\"$timestamp\""
-            payload = "$payload,\"username\"=\"$username\""
-            payload = "$payload}"
-            android.util.Log.d("SensorDataService", "Publishing: $payload")
+            val payload = buildString {
+                append("{\"latitude\"=$latStr")
+                append(",\"longitude\"=$lonStr")
+                append(",\"acceleration\"=\"${accelData ?: "N/A"}\"")
+                append(",\"timestamp\"=\"$timestamp\"")
+                append(",\"username\"=\"$username\"")
+                append("}")
+            }
+
+            android.util.Log.d("SensorDataService", "Publishing: $payload")// TODO check send the message
             MqttSender.publish("sensors", payload)
 
             handler.postDelayed(this, intervalMillis)
@@ -46,9 +56,18 @@ class SensorDataService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         accelerationProvider = AccelerationProvider(this)
         locationProvider = LocationProvider(this)
         locationProvider.start()
+
+        val username = sharedPreferences.getString("username", "") ?: ""
+        val password = sharedPreferences.getString("password", "") ?: ""
+        if (username.isNotEmpty() && password.isNotEmpty()) {
+            MqttSender.setCredentials(username, password)
+            MqttSender.connect()
+        } // TODO check if necessary
+
         startForegroundService()
         handler.post(sendDataRunnable)
     }
